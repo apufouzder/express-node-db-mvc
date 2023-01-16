@@ -19,15 +19,18 @@ module.exports.saveATools = async (req, res, next) => {
     const db = getDb();
     const tool = req.body;
 
-      const result = await db.collection("tools").insertOne(tool);
-      console.log(result);
+    const result = await db.collection("tools").insertOne(tool);
+    console.log(result);
 
-      if (result.insertedId) {
-        res.send(`Successfully insertedID: ${result.insertedId}`);
-      }
-
+    if (!result.insertedId) {
+      res.status(400).send({ error: false, error: "Something went wrong!" });
+    }
+    res.send({
+      success: true,
+      messages: `Tools added with id ${result.insertedId}`,
+    });
   } catch (error) {
-      next(error);
+    next(error);
   }
 };
 
