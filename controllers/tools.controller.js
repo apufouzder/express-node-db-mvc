@@ -13,12 +13,14 @@ module.exports.getAllTools = async (req, res, next) => {
       .skip(+page*limit)
       .limit(Number(limit))
       .toArray();
+    
     res.status(200).json({ success: true, data: tool });
   } catch (error) {
     next(error);
   }
 };
 
+// post tool in database
 module.exports.saveATools = async (req, res, next) => {
   try {
     const db = getDb();
@@ -39,6 +41,7 @@ module.exports.saveATools = async (req, res, next) => {
   }
 };
 
+// Load tool with specific id
 module.exports.getToolsDetails = async (req, res, next) => {
   try {
     const db = getDb();
@@ -47,9 +50,13 @@ module.exports.getToolsDetails = async (req, res, next) => {
     if (!ObjectId.isValid(id)) {
       return res.status(400).json({ success: false, error: "Not a valid id"});
     }
-    
+
     const tool = await db.collection("tools").findOne({ _id: ObjectId(id) });
     
+    if (!tool) {
+      return res.status(404).json({ success: false, error: "Couldn't find a tool with id" });
+    }
+
     res.status(200).json({success: true, data: tool})
   } catch (error) {
     next(error);
@@ -57,18 +64,48 @@ module.exports.getToolsDetails = async (req, res, next) => {
   
 };
 
-module.exports.updateTools = (req, res, next) => {
-  const { id } = req.params;
-  const newData = tools.find((tool) => tool.id === Number(id));
-  newData.id = id;
-  newData.name = req.body.name;
-  res.send(tools);
+// update tool with tool id
+module.exports.updateTools = async (req, res, next) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: "Not a valid id"});
+    }
+
+    const tool = await db.collection("tools").updateOne({ _id: ObjectId(id) }, {$set: req.body});
+    // const tool = await db.collection("tools").updateMany({ age: {$exists: false} }, {$set: {age: 5}});
+    
+    
+    if (!tool.modifiedCount) {
+      return res.status(404).json({ success: false, error: "Couldn't update tool!" });
+    }
+
+    res.status(200).json({success: true, messages: "Successfully updated data!"});
+  } catch (error) {
+    next(error);
+  }
 };
 
-module.exports.deleteTools = (req, res, next) => {
-  const { id } = req.params;
-  // const filter = { _id: id };
-  tools = tools.filter((tool) => tool.id !== Number(id));
+module.exports.deleteTools = async (req, res, next) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
 
-  res.send(tools);
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: "Not a valid id"});
+    }
+
+    const tool = await db.collection("tools").deleteOne({ _id: ObjectId(id) });
+    
+    
+    if (!tool.deleteCount) {
+      return res.status(404).json({ success: false, error: "Couldn't delete tool!" });
+    }
+
+    res.status(200).json({success: true, messages: "Successfully deleted data!"});
+  } catch (error) {
+    next(error);
+  }
 };
