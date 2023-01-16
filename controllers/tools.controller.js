@@ -1,17 +1,22 @@
 const { getDb } = require("../utils/dbConnect");
+const { ObjectId } = require("mongodb");
 
-let tools = [
-  { id: 1, name: "apu" },
-  { id: 2, name: "rana" },
-  { id: 3, name: "Pranto" },
-  { id: 4, name: "joy" },
-  { id: 5, name: "ratan" },
-];
+module.exports.getAllTools = async (req, res, next) => {
+  try {
+    const db = getDb();
+    const { limit, page } = req.query;
 
-module.exports.getAllTools = (req, res, next) => {
-  const { limit, page } = req.query;
-  console.log(limit, page);
-  res.json(tools);
+    // cursor => toArray(), forEach()
+    const tool = await db
+      .collection("tools")
+      .find()
+      .skip(+page*limit)
+      .limit(Number(limit))
+      .toArray();
+    res.status(200).json({ success: true, data: tool });
+  } catch (error) {
+    next(error);
+  }
 };
 
 module.exports.saveATools = async (req, res, next) => {
@@ -34,21 +39,22 @@ module.exports.saveATools = async (req, res, next) => {
   }
 };
 
-module.exports.getToolsDetails = (req, res, next) => {
-  const { id } = req.params;
-  console.log(id);
-  const fTools = tools.find((tool) => tool.id === Number(id));
+module.exports.getToolsDetails = async (req, res, next) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
 
-  // Data send/response Structure for front-end
-  res.status(200).send({
-    success: true,
-    messages: "Successfully",
-    data: fTools,
-  });
-  // res.status(500).send({
-  //     success: false,
-  //     messages: "Internal Server Error",
-  // });
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, error: "Not a valid id"});
+    }
+    
+    const tool = await db.collection("tools").findOne({ _id: ObjectId(id) });
+    
+    res.status(200).json({success: true, data: tool})
+  } catch (error) {
+    next(error);
+  }
+  
 };
 
 module.exports.updateTools = (req, res, next) => {
