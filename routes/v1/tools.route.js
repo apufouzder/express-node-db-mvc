@@ -1,21 +1,20 @@
 const express = require("express");
-const toolsControllers = require("../../controllers/tools.controller");
-const limiter = require("../../middleware/limiter");
-const viewCount = require("../../middleware/veiwCount");
-
 const router = express.Router();
+const toolsController = require("../.././controllers/tools.controller");
+const limiter = require("../../middleware/limiter");
+const viewCount = require("../../middleware/viewCount");
 
-// router.get("/", (req, res) => {
-//   res.send("tools found with id");
+// router.get("/:id", (req, res) => {
+//   res.send("Tools get!");
 // });
-
 // router.post("/", (req, res) => {
-//   res.send("tool added");
+//   res.send("tools post!");
 // });
 
 router
   .route("/")
   /**
+   * API Documentation >> ................
    * @api {get} /tools All tools
    * @apiDescription Get all the tools
    * @apiPermission admin
@@ -30,10 +29,10 @@ router
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated users can access the data
    * @apiError (Forbidden 403)     Forbidden     Only admins can access the data
    */
-  .get(toolsControllers.getAllTools)
-
+  .get(toolsController.getAllTools)
   /**
-   * @api {post} /tools save a tool
+   * API Documentation >> ................
+   * @api {post} /tools save a tools
    * @apiDescription Get all the tools
    * @apiPermission admin
    *
@@ -47,15 +46,12 @@ router
    * @apiError (Unauthorized 401)  Unauthorized  Only authenticated users can access the data
    * @apiError (Forbidden 403)     Forbidden     Only admins can access the data
    */
-  .post(toolsControllers.saveATool);
-  
-
-router.route("/test").post(toolsControllers.test).get(toolsControllers.testGet);
+  .post(toolsController.saveATools);
 
 router
   .route("/:id")
-  .get(viewCount, limiter, toolsControllers.getToolDetail)
-  .patch(toolsControllers.updateTool)
-  .delete(toolsControllers.deleteTool);
+  .get(viewCount, toolsController.getToolsDetails)
+  .patch(toolsController.updateTools)
+  .delete(toolsController.deleteTools);
 
 module.exports = router;
