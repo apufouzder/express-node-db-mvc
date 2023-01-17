@@ -48,6 +48,9 @@ router
    */
   .post(toolsController.saveATools);
 
+  // test routes for indexing check database
+router.route("/test").post(toolsController.test).get(toolsController.getTest);
+
 router
   .route("/:id")
   .get(viewCount, toolsController.getToolsDetails)
